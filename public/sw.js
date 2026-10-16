@@ -5,7 +5,7 @@
  * ⚠️ ما كيكاشّش حتى طلب ديال /api/ — الدردشة خاصها الشبكة دايماً.
  */
 
-const CACHE = "rtlai-v1";
+const CACHE = "rtlai-v2";
 const SHELL = [
   "/",
   "/index.html",
