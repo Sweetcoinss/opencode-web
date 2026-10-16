@@ -18,6 +18,53 @@
 > GitHub Pages ما كيخدمش لهاد المشروع — حيت الموقع كيحتاج **سيرفر Node**
 > (خاصو بروكسي: البوابة كتسمح للمتصفح غير بـ `GET`/`OPTIONS`، ماشي `POST`).
 
+## ☁️ الحل الدائم بلا حاسوب: Cloudflare Workers ⭐
+
+رابط **دايم** `https://opencode-web.<account>.workers.dev` كيخدم **والحاسوب مسدود**،
+بلا بطاقة بنكية (الخطة المجانية: **100,000 طلب/يوم**). وهاد النسخة **ما فيهاش
+الوضع المحلي** — علاش آمنة بطبيعتها.
+
+الكود فـ `worker/`، وكيتدمج فملف واحد `worker/dist/worker.js`.
+
+### الطريقة 1 — لصق فلوحة Cloudflare (أسهل، بلا سطر أوامر)
+
+1. سجّل: https://dash.cloudflare.com/sign-up (إيميل + تأكيد — بلا بطاقة)
+2. **Workers & Pages** ← **Create** ← **Worker** ← سمّيه `opencode-web`
+3. حيّد الكود الافتراضي، و**لصق محتوى `worker/dist/worker.js` كامل**
+4. **Deploy** ← الرابط: `https://opencode-web.<account>.workers.dev` ✅
+
+### الطريقة 2 — أوتوماتيكي من GitHub
+
+فلوحة Cloudflare: **Workers & Pages** ← **Create** ← **Connect to Git** ← اختار
+المستودع واضبط:
+
+| الإعداد | القيمة |
+|---|---|
+| Build command | `node worker/build.mjs` |
+| Deploy command | `npx wrangler deploy` |
+
+### الطريقة 3 — من الطرفية
+
+```cmd
+npx wrangler login
+npm run worker:deploy
+```
+
+### تحقق محلي قبل النشر (بلا حساب)
+
+```cmd
+npm run worker:build    # كيدمج public/* + handler.js → worker/dist/worker.js
+npm run worker:test     # 14 فحص (ملفات، نماذج، بثّ، حماية)
+npm run worker:dev      # خادم محلي على 8791 باش تشوف الواجهة
+```
+
+| | Cloudflare Workers ⭐ | Cloudflare Tunnel | Render |
+|---|---|---|---|
+| حساب | إيميل (مجاني، بلا بطاقة) | ❌ لا | GitHub |
+| كيخدم والحاسوب مسدود | ✅ **نعم** | ❌ لا | ✅ نعم |
+| الرابط | **دايم** | كيتبدل | دايم |
+| الوضع المحلي | ❌ ما كاينش | ✅ من نفس الحاسوب | ❌ مطفي |
+
 ## 📱 رابط عمومي دابا، بلا حساب (Cloudflare Tunnel)
 
 ملي الحاسوب شغّال، كتقدر تخرج رابط `https://….trycloudflare.com` كيخدم من الهاتف
@@ -49,6 +96,9 @@ tunnel.cmd        ← كليك مزدوج
 | حساب | ❌ لا | GitHub (مجاني) |
 | كيخدم والحاسوب مسدود | ❌ لا | ✅ نعم |
 | الرابط | كيتبدل ملي تعاود تشغّل | ثابت |
+
+> ℹ️ تحقّقنا: النفق كيدعم البثّ (521 قطعة فـ 11 ثانية) — خلافًا لما كتقول
+> وثائق Cloudflare. ولكن الرابط مازال كيتبدل وكيحتاج الحاسوب شغال.
 
 ---
 

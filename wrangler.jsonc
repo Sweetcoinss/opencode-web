@@ -1,0 +1,8 @@
+{
+  // نشر الموقع على Cloudflare Workers — رابط دايم: https://opencode-web.<account>.workers.dev
+  // الملف الرئيسي مولّد بـ: node worker/build.mjs
+  "name": "opencode-web",
+  "main": "worker/dist/worker.js",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true }
+}

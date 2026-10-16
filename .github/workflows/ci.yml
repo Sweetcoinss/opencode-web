@@ -21,6 +21,15 @@ jobs:
             node --check "$f" && echo "OK  $f"
           done
 
+      - name: نسخة Cloudflare Worker — توليد وفحص
+        run: |
+          node worker/build.mjs
+          if ! git diff --quiet worker/dist/worker.js; then
+            echo "❌ worker/dist/worker.js ماشي محدّث — شغّل: node worker/build.mjs"
+            exit 1
+          fi
+          node worker/test-local.mjs
+
       - name: شغّل الخادم وتأكد أنه كيجاوب
         run: |
           node server.mjs &

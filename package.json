@@ -6,7 +6,11 @@
   "description": "موقع محلي (بالعربية) للمحادثة مع نماذج OpenCode المجانية عبر واجهة الـ API المحلية",
   "main": "server.mjs",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "worker:build": "node worker/build.mjs",
+    "worker:test": "node worker/test-local.mjs",
+    "worker:dev": "node worker/build.mjs && node worker/test-local.mjs --serve",
+    "worker:deploy": "node worker/build.mjs && wrangler deploy"
   },
   "engines": {
     "node": ">=18"
