@@ -7,6 +7,17 @@
 | 🔌 **عبر opencode** | كيوسّط للخدمة الخلفية ديال `opencode` المحلية (جلسات + أدوات + أذونات) | ✅ نعم |
 | 🌐 **مباشر** | كيهدر مباشرة مع بوابة OpenCode المجانية بنفس طريقة عميل `opencode` | ❌ لا — كيخدم من أي سيرفر |
 
+## 🚀 نشر بنقرة وحدة
+
+<a href="https://render.com/deploy?repo=https://github.com/Sweetcoinss/opencode-web">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="36">
+</a>
+
+→ كيطلب منك غير **كلمة السر** (`APP_PASSWORD`) وكيعطيك رابط `https://<name>.onrender.com` كيخدم من التيليفون.
+
+> GitHub Pages ما كيخدمش لهاد المشروع — حيت الموقع كيحتاج **سيرفر Node**
+> (خاصو بروكسي: البوابة كتسمح للمتصفح غير بـ `GET`/`OPTIONS`، ماشي `POST`).
+
 ---
 
 ## 1) منين كتجي المجانية (نتيجة فحص الكود)
@@ -184,6 +195,9 @@ opencode-web/
 │   ├── style.css       المظهرين (فاتح/غامق) والتخطيط
 │   └── app.js          منطق الوضعين
 ├── start.cmd           تشغيل بنقرة مزدوجة
+├── Dockerfile          للنشر على أي منصة (Render / Railway / Fly / VPS)
+├── render.yaml         نشر بنقرة وحدة على Render
+├── .github/workflows/  فحص أوتوماتيكي (CI)
 ├── test-flow.mjs       اختبار الوضع المحلي (بثّ + أدوات + تكلفة)
 ├── test-api.mjs        اختبار جلسات/نموذج/إيقاف/أذونات
 ├── test-direct.mjs     اختبار الوضع المباشر (بوابة + أدوات)

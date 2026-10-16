@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: تحقق من الصياغة
+        run: |
+          for f in server.mjs direct.mjs public/app.js check-all.mjs test-*.mjs; do
+            node --check "$f" && echo "OK  $f"
+          done
+
+      - name: شغّل الخادم وتأكد أنه كيجاوب
+        run: |
+          node server.mjs &
+          for i in $(seq 1 20); do
+            sleep 1
+            if curl -fsS http://127.0.0.1:8790/ > /dev/null 2>&1; then echo "الصفحة كتجاوب ✅"; break; fi
+          done
+          curl -fsS http://127.0.0.1:8790/ | grep -q "view-welcome" && echo "الواجهة كاملة ✅"
+          curl -fsS http://127.0.0.1:8790/app.js | head -c 40
+          echo
+          curl -fsS http://127.0.0.1:8790/api/direct/status

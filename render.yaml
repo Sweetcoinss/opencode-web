@@ -1,0 +1,19 @@
+# نشر بنقرة وحدة على Render (render.com) — Blueprint
+# https://render.com/deploy?repo=https://github.com/Sweetcoinss/opencode-web
+services:
+  - type: web
+    name: opencode-web
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # 0 = دردشة فقط (بلا أي وصول للملفات على السيرفر)
+      - key: ENABLE_TOOLS
+        value: "0"
+      # كلمة السر — Render غادي يطلبها منك ملي تنشر
+      - key: APP_PASSWORD
+        sync: false
