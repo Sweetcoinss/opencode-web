@@ -1,7 +1,10 @@
 /**
- * make-icons.mjs — كيولّد أيقونات PNG للتطبيق (بلا أي مكتبة خارجية)
+ * make-icons.mjs — كيولّد أيقونات PNG احتياطية (بلا أي مكتبة خارجية)
  *
  *   node tools/make-icons.mjs
+ *
+ * ⚠️ هاذي النسخة الاحتياطية: كترسم شعارًا هندسيًا (نجمة/دائرة) بلا صورة.
+ *    الأيقونات الرسمية كتجي من شعار حقيقي عبر `tools/make-icons.ps1`.
  *
  * كيخرج: public/icon-192.png  public/icon-512.png
  *        public/icon-maskable-512.png  public/apple-touch-icon.png

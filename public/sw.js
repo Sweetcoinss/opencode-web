@@ -5,13 +5,15 @@
  * ⚠️ ما كيكاشّش حتى طلب ديال /api/ — الدردشة خاصها الشبكة دايماً.
  */
 
-const CACHE = "rtlai-v2";
+const CACHE = "rtlai-v3";
 const SHELL = [
   "/",
   "/index.html",
   "/style.css",
   "/app.js",
   "/manifest.webmanifest",
+  "/favicon-32.png",
+  "/logo-96.png",
   "/icon-192.png",
   "/icon-512.png",
   "/apple-touch-icon.png",
