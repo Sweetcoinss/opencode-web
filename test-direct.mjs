@@ -26,7 +26,7 @@ const messages = [
 const res = await fetch(WEB + "/api/direct/chat", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ model, messages, workspace: "C:\\Users\\RDP\\opencode-web" }),
+  body: JSON.stringify({ model, messages, workspace: process.cwd() }),
 });
 console.log("CHAT status:", res.status, res.headers.get("content-type"));
 
