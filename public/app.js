@@ -151,7 +151,6 @@ const modelValue = (m) => (isDirect() ? m.id : modelKey(m));
 function modelTags(m) {
   const t = [];
   if (m.free) t.push("مجاني");
-  if (m.tools) t.push("أدوات");
   if (!isDirect()) {
     if (m.reasoning) t.push("تفكير");
     if ((m.input || []).includes("image")) t.push("صور");
@@ -860,17 +859,6 @@ function messageNode(msg, isLast) {
     wrap.appendChild(t);
   }
 
-  if (msg.tokens) {
-    const tk = msg.tokens;
-    wrap.appendChild(
-      el(
-        "div",
-        "usage muted",
-        `دخل ${tk.input || 0} • خرج ${tk.output || 0}${tk.reasoning ? ` • تفكير ${tk.reasoning}` : ""} • ${msg.cost ?? 0}$`
-      )
-    );
-  }
-
   wrap.appendChild(actionBar(msg));
   row.appendChild(wrap);
   return row;
@@ -886,7 +874,6 @@ function renderMessages() {
     dom.viewWelcome.classList.remove("hidden");
     dom.viewChat.classList.add("hidden");
     box.textContent = "";
-    renderUsage();
     renderStatusBadge();
     return;
   }
@@ -899,7 +886,6 @@ function renderMessages() {
   const lastId = lastIdx >= 0 ? messages[messages.length - 1 - lastIdx].id : null;
   for (const m of messages) box.appendChild(messageNode(m, m.type === "assistant" && m.id === lastId));
 
-  renderUsage();
   if (nearBottom) scrollToBottom(false);
 }
 
@@ -917,33 +903,6 @@ function isNearBottom() {
 function scrollToBottom(force) {
   const b = dom.messages;
   if (force || isNearBottom()) b.scrollTop = b.scrollHeight;
-}
-
-function renderUsage() {
-  let u = state.usage;
-  if (isDirect()) {
-    const last = currentChat()?.items.filter((i) => i.kind === "assistant" && i.usage).pop();
-    u = last?.usage
-      ? {
-          cost: 0,
-          tokens: {
-            input: last.usage.prompt_tokens ?? last.usage.input,
-            output: last.usage.completion_tokens ?? last.usage.output,
-            reasoning: last.usage.reasoning_tokens || 0,
-          },
-        }
-      : null;
-  }
-  if (!u) {
-    dom.usage.textContent = "";
-    return;
-  }
-  const t = u.tokens || {};
-  dom.usage.innerHTML =
-    `<span>التكلفة <b>${u.cost ?? 0}$</b></span>` +
-    `<span>دخل <b>${t.input || 0}</b></span>` +
-    `<span>خرج <b>${t.output || 0}</b></span>` +
-    (t.reasoning ? `<span>تفكير <b>${t.reasoning}</b></span>` : "");
 }
 
 function updateHeader() {
@@ -1091,7 +1050,7 @@ function handleEvent(ev) {
       return scheduleRefresh(200);
     case "session.usage.updated":
       state.usage = { cost: data.cost, tokens: data.tokens };
-      return renderUsage();
+      return;
     case "session.permission.created":
     case "session.permission.updated":
       return loadPermissions();
@@ -1138,7 +1097,6 @@ async function refreshSessionMeta() {
     if (session && state.session && session.id === state.session.id) {
       state.session = session;
       if (session.tokens) state.usage = { cost: session.cost, tokens: session.tokens };
-      renderUsage();
     }
   } catch {
     /* تجاهل */
@@ -1454,7 +1412,7 @@ function bind() {
     btnMenu: "#btn-menu", btnModel: "#btn-model", chipModel: "#chip-model", btnTheme: "#btn-theme",
     themeIcon: "#theme-icon", viewWelcome: "#view-welcome", viewChat: "#view-chat",
     chips: "#chips", wsBadge: "#ws-badge", wsDetail: "#ws-detail", messages: "#messages",
-    permissions: "#permissions", usage: "#usage", btnPlus: "#btn-plus", input: "#input",
+    permissions: "#permissions", btnPlus: "#btn-plus", input: "#input",
     btnMic: "#btn-mic", btnSend: "#btn-send", btnStop: "#btn-stop", scrim: "#scrim",
     drawer: "#drawer", btnDrawerClose: "#btn-drawer-close", btnNew: "#btn-new", btnSearch: "#btn-search",
     btnInstall: "#btn-install",
