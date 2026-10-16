@@ -186,6 +186,7 @@ opencode-web/
 ├── test-direct.mjs     اختبار الوضع المباشر (بوابة + أدوات)
 ├── test-gateway.mjs    يبيّن شنو كتقبل البوابة وشنو كترفض
 ├── test-chatonly.mjs   اختبار وضع الدردشة فقط
+├── check-all.mjs       فحص شامل (واجهة + وضعين)
 ├── test-login.mjs      اختبار كلمة السر
 └── README.md
 ```
@@ -214,6 +215,7 @@ node test-flow.mjs     # الوضع المحلي
 node test-api.mjs      # جلسات + أذونات
 node test-direct.mjs   # البوابة المجانية + الأدوات
 node test-chatonly.mjs # دردشة فقط (بلا أدوات)
+node check-all.mjs     # فحص شامل: الواجهة + الوضعين
 node test-gateway.mjs  # شنو كتقبل البوابة (تحقق ميداني)
 WEB=http://127.0.0.1:8791 node test-login.mjs   # كلمة السر (مع APP_PASSWORD)
 ```
