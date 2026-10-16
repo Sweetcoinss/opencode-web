@@ -34,6 +34,7 @@ const state = {
   sending: false,
   usage: null,
   toolsEnabled: false,
+  localAvailable: true,
   modelFilter: "free",
   favs: new Set(),
   direct: { chats: [], current: null },
@@ -217,6 +218,7 @@ async function loadHealth() {
   try {
     const h = await api("/api/health");
     state.health = h;
+    state.localAvailable = h.localAvailable !== false;
     state.toolsEnabled = false;
     if (h.ready) {
       dom.statusPill.textContent = `متصل • v${h.version}`;
@@ -1361,6 +1363,11 @@ function setMode(mode) {
   dom.modeLocal.classList.toggle("on", mode === "local");
   dom.modeDirect.classList.toggle("on", mode === "direct");
 
+  // الوضع المحلي مسدود على سيرفر عمومي (نفق / نشر)
+  const localOk = state.localAvailable !== false;
+  dom.modeLocal.disabled = !localOk;
+  dom.modeLocal.title = localOk ? "" : "الوضع المحلي مسدود فهاد السيرفر (كيوصل لملفات الحاسوب)";
+
   state.session = null;
   state.messages = [];
   state.deltas.clear();
@@ -1637,6 +1644,20 @@ async function initData() {
 
 async function init() {
   bind();
+  // إلا كان الوضع المحلي مسدود على هاد السيرفر (نفق ولا نشر) → دوز مباشرة للوضع المباشر
+  if (state.mode === "local") {
+    try {
+      const h = await api("/api/health");
+      state.localAvailable = h.localAvailable !== false;
+      if (!state.localAvailable) {
+        state.mode = "direct";
+        localStorage.setItem(LS.mode, "direct");
+        setTimeout(() => toast("الوضع المحلي مسدود فهاد السيرفر — دوزنا للوضع «مباشر»"), 1000);
+      }
+    } catch {
+      /* تجاهل */
+    }
+  }
   setMode(state.mode);
   renderMessages();
   updateRunningUi();

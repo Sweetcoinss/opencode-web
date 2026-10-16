@@ -696,6 +696,9 @@ body {
 /* شاشة اختيار النموذج فوق الإعدادات */
 #models { z-index: 80; }
 
+/* زر الوضع المحلي ملي يكون مسدود على سيرفر عمومي */
+.preset:disabled { opacity: .4; cursor: not-allowed; }
+
 .sheet-head {
   display: flex;
   align-items: center;

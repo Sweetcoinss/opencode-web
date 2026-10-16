@@ -89,6 +89,22 @@ try {
     if (ms.length && !missingFields.length) ok("حقول " + p, `${ms.length} نموذج • ${ms.filter((m) => m.free).length} مجاني`);
     else bad("حقول " + p, missingFields.join(",") || "بلا نماذج");
   }
+
+  // حماية الوضع المحلي: طلب جاي من برّا (نفق/بروكسي) خاصو يتسدّ
+  {
+    const remote = { headers: { "cf-connecting-ip": "203.0.113.9" } };
+    const r1 = await fetch(WEB + "/api/sessions", remote);
+    const r2 = await fetch(WEB + "/api/health", remote);
+    const h = JSON.parse(await r2.text());
+    if (r1.status === 403) ok("حماية الوضع المحلي", "طلب خارجي على /api/sessions → 403 ✅");
+    else bad("حماية الوضع المحلي", `تسرّب! status=${r1.status}`);
+    if (h.localAvailable === false && h.server === "محجوب" && !h.location) ok("إخفاء المسارات", "ما كتبانش مسارات الحاسوب للخارج ✅");
+    else bad("إخفاء المسارات", JSON.stringify({ localAvailable: h.localAvailable, server: h.server }));
+    const r3 = await fetch(WEB + "/api/health");
+    const h3 = JSON.parse(await r3.text());
+    if (h3.localAvailable === true) ok("الوضع المحلي من الداخل", "مازال خدام من نفس الحاسوب ✅");
+    else bad("الوضع المحلي من الداخل", String(h3.localAvailable));
+  }
 } catch (err) {
   bad("الحالة", err.message);
 }

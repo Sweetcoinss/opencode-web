@@ -64,6 +64,31 @@ const AUTH_TOKEN = APP_PASSWORD
   ? crypto.createHash("sha256").update("opencode-web:" + APP_PASSWORD).digest("hex")
   : null;
 
+// ------------------------------------------------------------------
+// حماية الوضع المحلي
+// الوضع المحلي كيدوز على خدمة OpenCode ديال الحاسوب (ملفات + أوامر)،
+// علاش ما خاصوش يكون متاح لأي واحد عندو الرابط (نفق ولا نشر).
+// ------------------------------------------------------------------
+
+/** طلب جاي من نفس الحاسوب — بلا نفق ولا بروكسي */
+function isLocalRequest(req) {
+  const host = String(req.headers.host || "")
+    .split(":")[0]
+    .toLowerCase();
+  const isLocalHost = ["127.0.0.1", "localhost", "::1", "[::1]", "0.0.0.0"].includes(host);
+  const proxied =
+    req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"] || req.headers["x-real-ip"];
+  return isLocalHost && !proxied;
+}
+
+/** مطفي الوضع المحلي بالكامل (للنشر على سيرفر) */
+const DISABLE_LOCAL = process.env.DISABLE_LOCAL === "1";
+
+/** المسارات العمومية الوحيدة: الحالة + تسجيل الدخول + الوضع المباشر */
+function isPublicApi(p) {
+  return p === "/api/health" || p === "/api/login" || p.startsWith("/api/direct/");
+}
+
 function cookieToken(req) {
   const raw = req.headers.cookie || "";
   for (const part of raw.split(";")) {
@@ -342,6 +367,21 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 401, { error: "خاصك تسجل الدخول بكلمة السر", needPassword: true });
     }
 
+    // ---------------- حماية الوضع المحلي ----------------
+    // مسموح إلا من نفس الحاسوب، ولا من برّا إلا إلا كان السيرفر محمي بكلمة سر
+    // ونتا مسجّل الدخول. DISABLE_LOCAL=1 كيطفي الوضع المحلي نهائيًا.
+    const localAllowed =
+      !DISABLE_LOCAL && (isLocalRequest(req) || (!!AUTH_TOKEN && isAuthorized(req)));
+
+    if (p.startsWith("/api/") && !isPublicApi(p) && !localAllowed) {
+      return sendJson(res, 403, {
+        localDisabled: true,
+        error: DISABLE_LOCAL
+          ? "الوضع المحلي مطفي فهاد السيرفر (DISABLE_LOCAL=1). استعمل الوضع «مباشر»."
+          : "الوضع المحلي مسموح غير من نفس الحاسوب — حيت كيوصل لملفات وأوامر حاسوبك. استعمل الوضع «مباشر»، ولا زيد APP_PASSWORD باش تحمي السيرفر.",
+      });
+    }
+
     // ---------------- معلومات الحالة ----------------
     if (p === "/api/health" && req.method === "GET") {
       let info = null;
@@ -357,15 +397,16 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         ready,
         version: info?.version || null,
-        server: serverUrl,
-        location: location?.directory || null,
+        server: localAllowed ? serverUrl : "محجوب",
+        location: localAllowed ? location?.directory || null : null,
         streaming: sseClients.size > 0 ? "متصل" : lastSseError,
         needPassword: !!AUTH_TOKEN ? !isAuthorized(req) : false,
+        localAvailable: localAllowed,
         direct: {
           base: DIRECT.base,
           version: gatewayVersion(),
           tools: DIRECT.enableTools ? ["read", "write", "bash"] : [],
-          workspace: DIRECT.workspace,
+          workspace: localAllowed ? DIRECT.workspace : null,
         },
         hint:
           "النماذج المجانية من مزوّد opencode تعمل بدون تسجيل دخول، أما بقية المزوّدات فتحتاج مفتاح API.",
@@ -522,7 +563,8 @@ const server = http.createServer(async (req, res) => {
         client: DIRECT.client,
         tools: DIRECT.enableTools ? ["read", "write", "bash"] : [],
         maxSteps: DIRECT.maxSteps,
-        workspace: DIRECT.workspace,
+        workspace: localAllowed ? DIRECT.workspace : null,
+        localAvailable: localAllowed,
         models: models.map((m) => m.id),
       });
     }
@@ -633,6 +675,14 @@ if (!found) {
 server.listen(WEB_PORT, WEB_HOST, () => {
   const url = `http://${WEB_HOST}:${WEB_PORT}`;
   log(`الموقع يعمل على: ${url}`);
+  if (DISABLE_LOCAL) {
+    log("الوضع المحلي: مطفي (DISABLE_LOCAL=1) — غير الوضع المباشر");
+  } else if (!APP_PASSWORD && WEB_HOST !== "127.0.0.1") {
+    log("⚠️  تنبيه أمني: الوضع المحلي كيبان للشبكة. من برّا كيتسدّ تلقائيًا،");
+    log("   ولكن الأفضل تزيد APP_PASSWORD ولا DISABLE_LOCAL=1.");
+  } else if (!APP_PASSWORD) {
+    log("الوضع المحلي: متاح من هاد الحاسوب برك (كيتسدّ على النفق/الشبكة)");
+  }
   log("أوقف التشغيل بـ Ctrl+C");
   connectUpstream();
 });

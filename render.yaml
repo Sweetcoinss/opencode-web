@@ -14,6 +14,9 @@ services:
       # 0 = دردشة فقط (بلا أي وصول للملفات على السيرفر)
       - key: ENABLE_TOOLS
         value: "0"
+      # كيطفي «الوضع المحلي» نهائيًا (ما كاينش opencode على السيرفر أصلًا)
+      - key: DISABLE_LOCAL
+        value: "1"
       # كلمة السر — Render غادي يطلبها منك ملي تنشر
       - key: APP_PASSWORD
         sync: false

@@ -15,3 +15,6 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# رابط النفق المؤقت (كيتولد محليًا)
+tunnel-url.txt
