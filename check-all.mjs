@@ -50,6 +50,9 @@ for (const [name, marker] of [
   ["القائمة الجانبية", 'id="drawer"'],
   ["الإعدادات", 'id="settings"'],
   ["شريحة النموذج", 'id="chip-model"'],
+  ["اختيار النموذج", 'id="models"'],
+  ["قائمة النماذج", 'id="model-list"'],
+  ["فلتر النماذج", 'id="model-filters"'],
   ["فقاعة الإدخال", 'id="input"'],
   ["زر الإيقاف", 'id="btn-stop"'],
   ["تسجيل الدخول", 'id="login"'],
@@ -77,6 +80,15 @@ try {
   else bad("بوابة النماذج المجانية", st.error || "");
   if ((st.models || []).length >= 5) ok("النماذج المجانية", `${st.models.length} نموذج`);
   else bad("النماذج المجانية", String(st.models?.length));
+
+  // حقول اختيار النموذج
+  for (const p of ["/api/models", "/api/direct/models"]) {
+    const ms = JSON.parse((await get(p)).text).models || [];
+    const need = ["id", "name", "free"];
+    const missingFields = need.filter((f) => !(f in (ms[0] || {})));
+    if (ms.length && !missingFields.length) ok("حقول " + p, `${ms.length} نموذج • ${ms.filter((m) => m.free).length} مجاني`);
+    else bad("حقول " + p, missingFields.join(",") || "بلا نماذج");
+  }
 } catch (err) {
   bad("الحالة", err.message);
 }

@@ -52,7 +52,7 @@ function prettyModelName(id) {
     })
     .join(" ")
     .trim();
-  return name + " — مجاني";
+  return name;
 }
 
 // ------------------------------------------------------------------

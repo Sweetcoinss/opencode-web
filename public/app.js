@@ -16,6 +16,7 @@ const LS = {
   mode: "ocw.mode",
   theme: "ocw.theme",
   chats: "ocw.chats",
+  favs: "ocw.favs",
 };
 
 const state = {
@@ -33,6 +34,8 @@ const state = {
   sending: false,
   usage: null,
   toolsEnabled: false,
+  modelFilter: "free",
+  favs: new Set(),
   direct: { chats: [], current: null },
 };
 
@@ -132,9 +135,29 @@ const isDirect = () => state.mode === "direct";
 function prettyCurrentModelName() {
   const v = dom.modelSelect.value;
   if (!v) return "—";
-  if (isDirect()) return v;
+  if (isDirect()) {
+    const f = state.models.find((m) => m.id === v);
+    return f ? f.name || f.id : v;
+  }
   const found = state.models.find((m) => modelKey(m) === v);
   return found ? found.name : v.slice(v.indexOf("/") + 1);
+}
+
+/* قيمة النموذج داخل <select> (مختلفة بين الوضعين) */
+const modelValue = (m) => (isDirect() ? m.id : modelKey(m));
+
+/* وسوم النموذج */
+function modelTags(m) {
+  const t = [];
+  if (m.free) t.push("مجاني");
+  if (m.tools) t.push("أدوات");
+  if (!isDirect()) {
+    if (m.reasoning) t.push("تفكير");
+    if ((m.input || []).includes("image")) t.push("صور");
+    if (m.context) t.push(Math.round(m.context / 1000) + "K سياق");
+  }
+  if (m.status && m.status !== "active") t.push(m.status);
+  return t;
 }
 
 /* ------------------------------------------------------------------ الشبكة */
@@ -310,9 +333,113 @@ function renderModelSelect() {
     dom.modelSelect.appendChild(new Option(previous, previous));
   }
   const firstFree = state.models.find((m) => m.free) || state.models[0];
-  dom.modelSelect.value = previous || (firstFree ? (isDirect() ? firstFree.id : modelKey(firstFree)) : "");
+  dom.modelSelect.value = previous || (firstFree ? modelValue(firstFree) : "");
   localStorage.setItem(isDirect() ? LS.directModel : LS.model, dom.modelSelect.value);
-  dom.chipModel.textContent = prettyCurrentModelName();
+  updateHeader();
+  renderModelList();
+}
+
+/* ------------------------------------------------------------------ اختيار النموذج */
+
+function renderModelList() {
+  if (!dom.modelList) return;
+  const box = dom.modelList;
+  box.textContent = "";
+
+  const q = dom.modelSearch.value.trim().toLowerCase();
+  const current = dom.modelSelect.value;
+  const source = state.models.filter((m) => (isDirect() ? true : m.enabled !== false));
+
+  let list = source;
+  if (state.modelFilter === "fav") list = list.filter((m) => state.favs.has(modelValue(m)));
+  else if (state.modelFilter === "free") list = list.filter((m) => m.free);
+  if (q) list = list.filter((m) => `${m.id} ${m.name || ""} ${m.family || ""}`.toLowerCase().includes(q));
+
+  const favCount = source.filter((m) => state.favs.has(modelValue(m))).length;
+  dom.modelCount.textContent = `${list.length} من ${source.length} نموذج${favCount ? ` • ${favCount} مفضّل` : ""}`;
+
+  if (!list.length) {
+    box.appendChild(
+      el("div", "muted", source.length ? "ما كاينش نتيجة. بدّل الفلتر ولا البحث." : "ما تحمّلو حتى نموذج — دير تحديث.")
+    );
+    return;
+  }
+
+  for (const m of list) {
+    const value = modelValue(m);
+    const row = el("div", "mitem" + (value === current ? " active" : ""));
+
+    const info = el("div", "minfo");
+    info.appendChild(el("div", "mname", m.name || m.id));
+    info.appendChild(el("div", "mid", m.id));
+    const tags = el("div", "mtags");
+    for (const t of modelTags(m)) {
+      const cls = t === "مجاني" ? "mtag free" : t === "أدوات" ? "mtag tools" : "mtag";
+      tags.appendChild(el("span", cls, t));
+    }
+    info.appendChild(tags);
+    row.appendChild(info);
+
+    const fav = state.favs.has(value);
+    const star = el("button", "star" + (fav ? " on" : ""), fav ? "★" : "☆");
+    star.title = fav ? "حيّد من المفضلة" : "زيد للمفضلة";
+    star.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (state.favs.has(value)) state.favs.delete(value);
+      else state.favs.add(value);
+      localStorage.setItem(LS.favs, JSON.stringify([...state.favs]));
+      renderModelList();
+    });
+    row.appendChild(star);
+
+    row.appendChild(el("span", "mcheck", value === current ? "✓" : ""));
+
+    row.addEventListener("click", () => {
+      dom.modelSelect.value = value;
+      applyModelChange();
+      closeModels();
+      toast("النموذج: " + (m.name || m.id));
+    });
+
+    box.appendChild(row);
+  }
+}
+
+function openModels() {
+  closeDrawer();
+  dom.modelSearch.value = "";
+  renderModelList();
+  dom.models.classList.add("open");
+  setTimeout(() => dom.modelSearch.focus(), 250);
+}
+
+function closeModels() {
+  dom.models.classList.remove("open");
+}
+
+async function applyModelChange() {
+  const value = dom.modelSelect.value;
+  localStorage.setItem(isDirect() ? LS.directModel : LS.model, value);
+  updateHeader();
+  dom.pickModelName.textContent = prettyCurrentModelName();
+
+  if (isDirect()) {
+    const chat = currentChat();
+    if (chat) {
+      chat.model = value;
+      saveDirectChats();
+    }
+    return;
+  }
+  if (!state.session) return;
+  try {
+    await api(`/api/sessions/${encodeURIComponent(state.session.id)}/model`, {
+      method: "POST",
+      body: { model: currentModel() },
+    });
+  } catch (err) {
+    toast("تعذّر تغيير النموذج: " + err.message);
+  }
 }
 
 async function loadAgents() {
@@ -765,7 +892,9 @@ function renderUsage() {
 }
 
 function updateHeader() {
-  dom.chipModel.textContent = prettyCurrentModelName();
+  const name = prettyCurrentModelName();
+  dom.chipModel.textContent = name;
+  if (dom.pickModelName) dom.pickModelName.textContent = name;
 }
 
 function updateRunningUi() {
@@ -1272,6 +1401,10 @@ function bind() {
     btnSettings: "#btn-settings", statusPill: "#status-pill", statusDetail: "#status-detail",
     settings: "#settings", btnSettingsBack: "#btn-settings-back", modeLocal: "#mode-local",
     modeDirect: "#mode-direct", modelSelect: "#model-select", showAll: "#show-all",
+    models: "#models", btnModels: "#btn-models", btnModelsBack: "#btn-models-back",
+    btnModelsRefresh: "#btn-models-refresh", modelSearch: "#model-search", modelCount: "#model-count",
+    modelList: "#model-list", modelFilters: "#model-filters", btnPickModel: "#btn-pick-model",
+    pickModelName: "#pick-model-name",
     agentField: "#agent-field", agentSelect: "#agent-select", dirField: "#dir-field",
     dirInput: "#dir-input", gatewayUrl: "#gateway-url", directNote: "#direct-note", btnSave: "#btn-save",
     btnDelete: "#btn-delete", login: "#login", loginForm: "#login-form", loginPassword: "#login-password",
@@ -1280,11 +1413,16 @@ function bind() {
   for (const [k, sel] of Object.entries(ids)) dom[k] = $(sel);
 
   dom.showAll.checked = localStorage.getItem(LS.showAll) === "1";
+  try {
+    state.favs = new Set(JSON.parse(localStorage.getItem(LS.favs) || "[]"));
+  } catch {
+    state.favs = new Set();
+  }
   applyTheme(state.theme, false);
 
   // الشريط العلوي
   dom.btnMenu.addEventListener("click", openDrawer);
-  dom.btnModel.addEventListener("click", openSettings);
+  dom.btnModel.addEventListener("click", openModels);
   dom.btnTheme.addEventListener("click", () => {
     const order = ["system", "light", "dark"];
     const next = order[(order.indexOf(state.theme) + 1) % order.length];
@@ -1337,24 +1475,27 @@ function bind() {
     b.addEventListener("click", () => applyTheme(b.dataset.theme))
   );
 
-  dom.modelSelect.addEventListener("change", async () => {
-    localStorage.setItem(isDirect() ? LS.directModel : LS.model, dom.modelSelect.value);
-    updateHeader();
-    if (isDirect()) {
-      const chat = currentChat();
-      if (chat) {
-        chat.model = dom.modelSelect.value;
-        saveDirectChats();
-      }
-      return;
-    }
-    if (state.session) {
-      try {
-        await api(`/api/sessions/${encodeURIComponent(state.session.id)}/model`, { method: "POST", body: { model: currentModel() } });
-      } catch (err) {
-        toast("تعذّر تغيير النموذج: " + err.message);
-      }
-    }
+  dom.modelSelect.addEventListener("change", applyModelChange);
+
+  // شاشة اختيار النموذج
+  dom.btnModels.addEventListener("click", openModels);
+  dom.btnModelsBack.addEventListener("click", closeModels);
+  dom.btnPickModel.addEventListener("click", openModels);
+  dom.btnModelsRefresh.addEventListener("click", async () => {
+    await loadModels();
+    toast("تحدّثت قائمة النماذج");
+  });
+  let modelSearchTimer = null;
+  dom.modelSearch.addEventListener("input", () => {
+    clearTimeout(modelSearchTimer);
+    modelSearchTimer = setTimeout(renderModelList, 140);
+  });
+  dom.modelFilters.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-filter]");
+    if (!b) return;
+    state.modelFilter = b.dataset.filter;
+    $$("#model-filters .preset").forEach((x) => x.classList.toggle("on", x === b));
+    renderModelList();
   });
 
   dom.agentSelect.addEventListener("change", () => localStorage.setItem(LS.agent, dom.agentSelect.value));
@@ -1470,6 +1611,7 @@ function bind() {
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      closeModels();
       closeSettings();
       closeDrawer();
     }

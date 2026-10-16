@@ -693,6 +693,9 @@ body {
 
 .sheet.open { transform: none; visibility: visible; }
 
+/* شاشة اختيار النموذج فوق الإعدادات */
+#models { z-index: 80; }
+
 .sheet-head {
   display: flex;
   align-items: center;
@@ -803,6 +806,89 @@ input[type="text"] { font-family: var(--mono); font-size: 12px; }
 
 .note.error { border-color: var(--danger); color: var(--danger); }
 .note code { font-family: var(--mono); direction: ltr; display: inline-block; }
+
+/* ---------------- اختيار النموذج ---------------- */
+
+.pickerbtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: start;
+  font-family: var(--font);
+}
+
+.pickerbtn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.1; flex: 0 0 auto; }
+#pick-model-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mcount { font-size: 11px; margin: 12px 2px 0; }
+
+.mlist { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+
+.mitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+}
+
+.mitem:hover { background: var(--surface2); }
+.mitem.active { border-color: var(--accent); }
+
+.minfo { flex: 1; min-width: 0; }
+
+.mname {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mid {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  direction: ltr;
+  text-align: left;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mtags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+
+.mtag {
+  font-size: 10px;
+  padding: 2.5px 8px;
+  border-radius: 20px;
+  background: var(--surface2);
+  color: var(--muted);
+}
+
+.mtag.free { background: rgba(52, 168, 83, .18); color: #7bd88f; }
+.mtag.tools { background: rgba(66, 133, 244, .18); color: #8ab4f8; }
+
+.star {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 2px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.star:hover, .star.on { color: #f5c542; }
+.mcheck { color: var(--accent); font-weight: 700; width: 16px; flex: 0 0 auto; }
 
 /* ---------------- تسجيل الدخول ---------------- */
 

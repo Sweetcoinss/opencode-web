@@ -108,6 +108,9 @@
   <button class="ditem" id="btn-new">
     <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> محادثة جديدة
   </button>
+  <button class="ditem" id="btn-models">
+    <svg viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z"/></svg> اختيار النموذج
+  </button>
   <button class="ditem" id="btn-search">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg> بحث في المحادثات
   </button>
@@ -130,6 +133,35 @@
   </div>
 </aside>
 
+<!-- ================= اختيار النموذج ================= -->
+<div id="models" class="sheet">
+  <div class="sheet-head">
+    <button id="btn-models-back" class="iconbtn" title="رجوع">
+      <svg viewBox="0 0 24 24"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>
+    </button>
+    <h2>اختيار النموذج</h2>
+    <span class="spacer"></span>
+    <button id="btn-models-refresh" class="iconbtn" title="تحديث القائمة">
+      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg>
+    </button>
+  </div>
+
+  <div class="sheet-body">
+    <div class="field">
+      <input id="model-search" type="search" placeholder="بحث… (مثال: deepseek)" autocomplete="off" />
+    </div>
+
+    <div class="presets" id="model-filters">
+      <button class="preset on" data-filter="free">مجاني</button>
+      <button class="preset" data-filter="all">الكل</button>
+      <button class="preset" data-filter="fav">★ المفضلة</button>
+    </div>
+
+    <div id="model-count" class="mcount muted"></div>
+    <div id="model-list" class="mlist"></div>
+  </div>
+</div>
+
 <!-- ================= الإعدادات ================= -->
 <div id="settings" class="sheet hidden">
   <div class="sheet-head">
@@ -148,12 +180,16 @@
 
     <div class="field">
       <div class="label">النموذج</div>
-      <select id="model-select"></select>
+      <button class="input pickerbtn" id="btn-pick-model" type="button">
+        <span id="pick-model-name">…</span>
+        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
       <label class="check">
         <input id="show-all" type="checkbox" />
         <span>إظهار النماذج اللي كتحتاج مفتاح</span>
       </label>
     </div>
+    <select id="model-select" class="hidden" aria-hidden="true" tabindex="-1"></select>
 
     <div class="field" id="agent-field">
       <div class="label">الوكيل</div>
