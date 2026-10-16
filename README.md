@@ -176,7 +176,7 @@ hex(6 بايت من now) + 14 حرف عشوائي base62
 **المتطلبات:** Node.js 18+ (بلا أي مكتبة خارجية).
 
 ```bash
-cd C:\Users\RDP\opencode-web
+cd C:\Users\RDP\Desktop\opencode-web
 node server.mjs
 ```
 
