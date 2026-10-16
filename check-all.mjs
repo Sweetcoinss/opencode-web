@@ -53,6 +53,9 @@ for (const [name, marker] of [
   ["اختيار النموذج", 'id="models"'],
   ["قائمة النماذج", 'id="model-list"'],
   ["فلتر النماذج", 'id="model-filters"'],
+  ["PWA: manifest", 'rel="manifest"'],
+  ["PWA: أيقونة آبل", 'apple-touch-icon'],
+  ["PWA: زر التثبيت", 'id="btn-install"'],
   ["فقاعة الإدخال", 'id="input"'],
   ["زر الإيقاف", 'id="btn-stop"'],
   ["تسجيل الدخول", 'id="login"'],
@@ -65,6 +68,35 @@ for (const [f, type] of [["/style.css", "text/css"], ["/app.js", "javascript"]])
   const r = await get(f);
   if (r.status === 200 && r.ct.includes(type)) ok("ملف " + f, `${r.status} • ${(r.text.length / 1024).toFixed(1)}KB`);
   else bad("ملف " + f, String(r.status));
+}
+
+/* ---------------- 1ب) PWA ---------------- */
+
+{
+  const m = await get("/manifest.webmanifest");
+  let mj = null;
+  try {
+    mj = JSON.parse(m.text);
+  } catch {
+    /* ماشي JSON */
+  }
+  if (m.status === 200 && mj && (mj.icons || []).length >= 3 && mj.display === "standalone") {
+    ok("PWA: manifest", `${mj.icons.length} أيقونات • ${mj.display} • ${mj.dir}`);
+  } else bad("PWA: manifest", `status=${m.status} ct=${m.ct}`);
+
+  const sw = await get("/sw.js");
+  if (sw.status === 200 && sw.text.includes("addEventListener") && sw.text.includes("/api/")) {
+    ok("PWA: عامل الخدمة", `${(sw.text.length / 1024).toFixed(1)}KB • ما كيكاشّش /api/`);
+  } else bad("PWA: عامل الخدمة", String(sw.status));
+
+  let iconsOk = true;
+  for (const name of ["/icon-192.png", "/icon-512.png", "/icon-maskable-512.png", "/apple-touch-icon.png"]) {
+    const r = await fetch(WEB + name);
+    const b = new Uint8Array(await r.arrayBuffer());
+    if (r.status !== 200 || b[0] !== 0x89 || b[1] !== 0x50) iconsOk = false;
+  }
+  if (iconsOk) ok("PWA: الأيقونات", "4 أيقونات PNG صحيحة");
+  else bad("PWA: الأيقونات", "شي أيقونة ناقصة");
 }
 
 /* ---------------- 2) الحالة ---------------- */

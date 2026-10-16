@@ -210,6 +210,59 @@ function applyTheme(pref, save = true) {
   $$("[data-theme]").forEach((b) => {
     if (b.tagName === "BUTTON" && b.classList.contains("preset")) b.classList.toggle("on", b.dataset.theme === pref);
   });
+
+  // لون شريط النظام فالتطبيق المثبّت
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", resolved === "dark" ? "#0c0d12" : "#f6f7fb");
+}
+
+/* ------------------------------------------------------------------ التثبيت كتطبيق (PWA) */
+
+let installPrompt = null;
+
+function setupPwa() {
+  // تسجيل عامل الخدمة (خاص HTTPS ولا localhost)
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+
+  // أندرويد/كروم: كيبدا الحدث ملي الموقع يقدر يتثبّت
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    installPrompt = e;
+    dom.btnInstall.classList.remove("hidden");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installPrompt = null;
+    dom.btnInstall.classList.add("hidden");
+    toast("تثبّت التطبيق ✅");
+  });
+
+  dom.btnInstall.addEventListener("click", async () => {
+    closeDrawer();
+    if (installPrompt) {
+      installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === "accepted") dom.btnInstall.classList.add("hidden");
+      installPrompt = null;
+      return;
+    }
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    toast(
+      isIos
+        ? "فـ iPhone: زر المشاركة ⬆️ ← «إضافة إلى الشاشة الرئيسية»"
+        : "افتح قائمة المتصفح (⋮) ← «تثبيت التطبيق» ولا «إضافة إلى الشاشة الرئيسية»"
+    );
+  });
+
+  // اختصار «محادثة جديدة» من أيقونة التطبيق
+  if (new URLSearchParams(location.search).has("new")) {
+    history.replaceState(null, "", location.pathname);
+    setTimeout(() => (isDirect() ? newDirectChat() : createSession()), 300);
+  }
 }
 
 /* ------------------------------------------------------------------ الحالة */
@@ -1404,6 +1457,7 @@ function bind() {
     permissions: "#permissions", usage: "#usage", btnPlus: "#btn-plus", input: "#input",
     btnMic: "#btn-mic", btnSend: "#btn-send", btnStop: "#btn-stop", scrim: "#scrim",
     drawer: "#drawer", btnDrawerClose: "#btn-drawer-close", btnNew: "#btn-new", btnSearch: "#btn-search",
+    btnInstall: "#btn-install",
     sessionSearch: "#session-search", sessionList: "#session-list", btnRefresh: "#btn-refresh",
     btnSettings: "#btn-settings", statusPill: "#status-pill", statusDetail: "#status-detail",
     settings: "#settings", btnSettingsBack: "#btn-settings-back", modeLocal: "#mode-local",
@@ -1644,6 +1698,7 @@ async function initData() {
 
 async function init() {
   bind();
+  setupPwa();
   // إلا كان الوضع المحلي مسدود على هاد السيرفر (نفق ولا نشر) → دوز مباشرة للوضع المباشر
   if (state.mode === "local") {
     try {

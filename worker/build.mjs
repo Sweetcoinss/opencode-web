@@ -13,14 +13,24 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const pubDir = path.join(here, "..", "public");
 const outDir = path.join(here, "dist");
 
+const BINARY = new Set([".png", ".ico", ".jpg", ".jpeg", ".webp", ".woff", ".woff2", ".gif"]);
+
 const assets = {};
 let total = 0;
 for (const name of fs.readdirSync(pubDir).sort()) {
   const full = path.join(pubDir, name);
   if (!fs.statSync(full).isFile()) continue;
-  const text = fs.readFileSync(full, "utf8");
-  assets[name] = text;
-  total += Buffer.byteLength(text);
+  const ext = path.extname(name).toLowerCase();
+  if (BINARY.has(ext)) {
+    // ثنائي → base64 (utf8 كيخرّب الصور)
+    const b64 = fs.readFileSync(full).toString("base64");
+    assets[name] = { __b64: b64 };
+    total += Buffer.byteLength(b64);
+  } else {
+    const text = fs.readFileSync(full, "utf8");
+    assets[name] = text;
+    total += Buffer.byteLength(text);
+  }
 }
 
 const handler = fs.readFileSync(path.join(here, "handler.js"), "utf8");

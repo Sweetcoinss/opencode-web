@@ -80,7 +80,32 @@ if (serveMode) {
     else bad(`ملف ${file}`, `status=${r.status}`);
   }
 
-  // 2) الحالة: بلا وضع محلي
+  // 2) PWA — التثبيت كتطبيق
+  {
+    const m = await fetch(W + "/manifest.webmanifest");
+    const mj = await m.json().catch(() => null);
+    if (m.status === 200 && mj && (mj.icons || []).length >= 3 && mj.display === "standalone" && mj.dir === "rtl")
+      ok("manifest (PWA)", `${mj.icons.length} أيقونات • ${mj.display} • ${mj.dir}`);
+    else bad("manifest (PWA)", `status=${m.status}`);
+
+    const sw = await fetch(W + "/sw.js");
+    const swt = await sw.text();
+    if (sw.status === 200 && swt.includes("addEventListener") && swt.includes("/api/"))
+      ok("عامل الخدمة (sw.js)", `${(swt.length / 1024).toFixed(1)} KB`);
+    else bad("عامل الخدمة (sw.js)", `status=${sw.status}`);
+
+    const ico = await fetch(W + "/icon-192.png");
+    const buf = new Uint8Array(await ico.arrayBuffer());
+    if (ico.status === 200 && buf[0] === 0x89 && buf[1] === 0x50) ok("الأيقونات", `PNG ${(buf.length / 1024).toFixed(1)} KB`);
+    else bad("الأيقونات", `status=${ico.status}`);
+
+    const html = await (await fetch(W + "/")).text();
+    if (html.includes('rel="manifest"') && html.includes("apple-touch-icon") && html.includes("btn-install"))
+      ok("PWA فالصفحة", "manifest + أيقونة آبل + زر التثبيت");
+    else bad("PWA فالصفحة", "ناقص");
+  }
+
+  // 3) الحالة: بلا وضع محلي
   {
     const h = await (await fetch(W + "/api/health")).json();
     if (h.localAvailable === false && h.server === "محجوب") ok("الحالة", "الوضع المحلي مطفي + بلا تسريب مسارات");

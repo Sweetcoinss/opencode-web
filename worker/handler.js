@@ -262,8 +262,17 @@ const TYPES = {
 
 function asset(pathname) {
   const clean = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
-  const body = ASSETS[clean];
+  let body = ASSETS[clean];
   if (body === undefined) return null;
+
+  // الملفات الثنائية مدمجة base64 (PNG/ICO…)
+  if (body && typeof body === "object" && body.__b64) {
+    const bin = atob(body.__b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    body = bytes;
+  }
+
   const ext = clean.includes(".") ? clean.split(".").pop().toLowerCase() : "html";
   return new Response(body, {
     headers: {
