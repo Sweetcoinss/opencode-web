@@ -1,0 +1,17 @@
+# اعتماديات
+node_modules/
+npm-debug.log*
+
+# أسرار — عمرها ما تتسجل فـ git
+.env
+.env.*
+service.json
+*.key
+*.pem
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

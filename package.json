@@ -1,0 +1,14 @@
+{
+  "name": "opencode-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "موقع محلي (بالعربية) للمحادثة مع نماذج OpenCode المجانية عبر واجهة الـ API المحلية",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

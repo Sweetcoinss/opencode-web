@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0c0d12" />
+<title>Rtl AI — نماذج مجانية</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<div class="stage">
+  <div class="app">
+
+    <!-- ================= الشريط العلوي ================= -->
+    <header class="topbar">
+      <button id="btn-menu" class="iconbtn" title="القائمة" aria-label="القائمة">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+
+      <button id="btn-model" class="modelchip" title="تغيير النموذج">
+        <span id="chip-model">…</span>
+        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      <div class="spacer"></div>
+
+      <button id="btn-theme" class="iconbtn" title="تبديل المظهر" aria-label="تبديل المظهر">
+        <svg viewBox="0 0 24 24" id="theme-icon"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+      </button>
+
+      <div class="avatar">ر</div>
+    </header>
+
+    <!-- ================= شاشة الترحيب ================= -->
+    <main id="view-welcome" class="view welcome">
+      <div class="hello"><span class="g" id="hello-name">أهلاً بك</span></div>
+      <div class="sub" id="hello-sub">كيفاش نقدر نعاونك اليوم؟</div>
+
+      <div class="chips" id="chips">
+        <button class="chip" data-prompt="اشرح لي كيفاش كيخدم الذكاء الاصطناعي ببساطة، بمثال من الحياة اليومية.">
+          <svg viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z"/></svg>
+          <span>اشرح لي الذكاء الاصطناعي ببساطة</span>
+        </button>
+        <button class="chip" data-prompt="كتب لي رسالة تقديم (cover letter) قصيرة واحترافية لمنصب مطوّر برمجيات.">
+          <svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 13h8M8 17h5"/></svg>
+          <span>كتب لي رسالة تقديم للعمل</span>
+        </button>
+        <button class="chip" data-prompt="دير لي خطة مراجعة منظمة للامتحانات على مدى أسبوعين.">
+          <svg viewBox="0 0 24 24"><path d="M8 3v4M16 3v4M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
+          <span>خطة مراجعة للامتحانات</span>
+        </button>
+        <button class="chip" data-prompt="ترجم هاد النص للعربية بأسلوب طبيعي وسلس: &quot;Small steps every day lead to big results.&quot;">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18"/></svg>
+          <span>ترجم نص للعربية</span>
+        </button>
+      </div>
+
+      <div class="wsline">
+        <span id="ws-badge" class="pill">…</span>
+        <span id="ws-detail" class="muted"></span>
+      </div>
+    </main>
+
+    <!-- ================= شاشة المحادثة ================= -->
+    <main id="view-chat" class="view chat hidden">
+      <div id="messages" class="messages"></div>
+    </main>
+
+    <!-- ================= الأذونات (الوضع المحلي) ================= -->
+    <div id="permissions" class="permissions hidden"></div>
+
+    <!-- ================= شريط الإدخال ================= -->
+    <div class="inputwrap">
+      <div id="usage" class="usage"></div>
+      <div class="inputbar">
+        <button class="roundbtn" id="btn-plus" title="مجلد العمل / الإعدادات">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <textarea id="input" rows="1" placeholder="اكتب رسالتك…" autocomplete="off"></textarea>
+        <button class="roundbtn" id="btn-mic" title="إدخال صوتي (المتصفح)">
+          <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 003-3V6a3 3 0 10-6 0v5a3 3 0 003 3z"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>
+        </button>
+        <button class="roundbtn sendbtn" id="btn-send" title="إرسال">
+          <svg viewBox="0 0 24 24"><path d="M4 20l16-8L4 4v6l10 2-10 2z"/></svg>
+        </button>
+        <button class="roundbtn stopbtn hidden" id="btn-stop" title="إيقاف">
+          <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>
+        </button>
+      </div>
+      <div class="disclaimer" id="disclaimer">النماذج المجانية يمكن تعطي معلومات غير دقيقة — تحقق منها.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= القائمة الجانبية ================= -->
+<div id="scrim" class="scrim hidden"></div>
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <div class="dhead">
+    <div class="logo"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2l1.9 7.1L21 11l-7.1 1.9L12 20l-1.9-7.1L3 11l7.1-1.9z"/></svg></div>
+    <span>Rtl <b>AI</b></span>
+    <button id="btn-drawer-close" class="iconbtn small" title="إغلاق">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <button class="ditem" id="btn-new">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> محادثة جديدة
+  </button>
+  <button class="ditem" id="btn-search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg> بحث في المحادثات
+  </button>
+  <input id="session-search" class="dsearch hidden" type="search" placeholder="بحث…" />
+
+  <div class="dsection">الأخيرة</div>
+  <div id="session-list" class="dlist"></div>
+
+  <div class="spacer"></div>
+
+  <button class="ditem" id="btn-refresh">
+    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg> تحديث
+  </button>
+  <button class="ditem" id="btn-settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2 2 2 0 11-4 0 1.7 1.7 0 00-2.9-1.2l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.7 1.7 0 003 15a2 2 0 010-4 1.7 1.7 0 001.2-2.9l-.1-.1a2 2 0 112.8-2.8l.1.1A1.7 1.7 0 0010 4.6a2 2 0 014 0 1.7 1.7 0 002.9 1.2l.1-.1a2 2 0 112.8 2.8l-.1.1A1.7 1.7 0 0021 11a2 2 0 010 4z"/></svg> الإعدادات
+  </button>
+  <div class="dfooter">
+    <span id="status-pill" class="pill">…</span>
+    <span id="status-detail" class="muted"></span>
+  </div>
+</aside>
+
+<!-- ================= الإعدادات ================= -->
+<div id="settings" class="sheet hidden">
+  <div class="sheet-head">
+    <button id="btn-settings-back" class="iconbtn" title="رجوع">
+      <svg viewBox="0 0 24 24"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>
+    </button>
+    <h2>الإعدادات</h2>
+  </div>
+
+  <div class="sheet-body">
+    <div class="label">الوضع</div>
+    <div class="presets">
+      <button class="preset" id="mode-local">عبر opencode</button>
+      <button class="preset" id="mode-direct">مباشر</button>
+    </div>
+
+    <div class="field">
+      <div class="label">النموذج</div>
+      <select id="model-select"></select>
+      <label class="check">
+        <input id="show-all" type="checkbox" />
+        <span>إظهار النماذج اللي كتحتاج مفتاح</span>
+      </label>
+    </div>
+
+    <div class="field" id="agent-field">
+      <div class="label">الوكيل</div>
+      <select id="agent-select"></select>
+    </div>
+
+    <div class="field" id="dir-field">
+      <div class="label">مجلد العمل</div>
+      <input id="dir-input" type="text" spellcheck="false" placeholder="C:\Users\..." />
+    </div>
+
+    <div class="field">
+      <div class="label">المظهر</div>
+      <div class="presets">
+        <button class="preset" data-theme="system">النظام</button>
+        <button class="preset" data-theme="light">فاتح</button>
+        <button class="preset" data-theme="dark">غامق</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">البوابة (للوضع المباشر)</div>
+      <div class="input mono" id="gateway-url">https://opencode.ai/inference/v1</div>
+    </div>
+
+    <div id="direct-note" class="note hidden">…</div>
+
+    <button class="savebtn" id="btn-save">حفظ ورجوع</button>
+    <button class="linkbtn" id="btn-delete">🗑 حذف المحادثة الحالية</button>
+  </div>
+</div>
+
+<!-- ================= تسجيل الدخول ================= -->
+<div id="login" class="login hidden">
+  <form id="login-form" class="login-card">
+    <div class="logo big"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2l1.9 7.1L21 11l-7.1 1.9L12 20l-1.9-7.1L3 11l7.1-1.9z"/></svg></div>
+    <h2>هاد الموقع محمي</h2>
+    <p class="muted">اكتب كلمة السر باش تكمّل.</p>
+    <input id="login-password" type="password" placeholder="كلمة السر" autocomplete="current-password" />
+    <button class="savebtn" type="submit">دخول</button>
+    <div id="login-error" class="note error hidden"></div>
+  </form>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
